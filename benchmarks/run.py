@@ -26,7 +26,7 @@ RETRYABLE_CONNECT_ERRNOS = {
     errno.EAGAIN,
 }
 
-typedef dataclass(slots=True)
+@dataclass(slots=True)
 class ScenarioResult:
     """Benchmark result for one server/scenario pair."""
 
