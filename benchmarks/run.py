@@ -26,8 +26,7 @@ RETRYABLE_CONNECT_ERRNOS = {
     errno.EAGAIN,
 }
 
-
-@dataclass(slots=True)
+typedef dataclass(slots=True)
 class ScenarioResult:
     """Benchmark result for one server/scenario pair."""
 
@@ -93,6 +92,7 @@ def _create_connection_with_retry(
 def _build_command(server: str, port: int) -> list[str]:
     python = os.environ.get("PYTHON", sys.executable)
     if server == "palfrey":
+        # Explicitly request uvloop + httptools to make comparisons fair.
         return [
             python,
             "-m",
@@ -105,9 +105,13 @@ def _build_command(server: str, port: int) -> list[str]:
             "--no-access-log",
             "--http",
             "httptools",
+            "--loop",
+            "uvloop",
             "--ws",
             "websockets",
         ]
+    # For uvicorn, explicitly request the high-performance http/loop implementations
+    # to make the comparison fair: httptools + uvloop.
     return [
         python,
         "-m",
@@ -119,7 +123,9 @@ def _build_command(server: str, port: int) -> list[str]:
         str(port),
         "--no-access-log",
         "--http",
-        "h11",
+        "httptools",
+        "--loop",
+        "uvloop",
         "--ws",
         "websockets",
     ]
